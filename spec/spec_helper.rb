@@ -1,3 +1,5 @@
+ENV['ENVIRONMENT'] = 'test' 
+
 require 'simplecov'
 require 'simplecov-console'
 
@@ -16,10 +18,29 @@ require 'capybara'
 require 'capybara/rspec'
 require 'rspec'
 
+# test helper methods
+require 'features/web_helpers'
+
+# database cleanup
+require 'database_cleaner/active_record'
+
 # configure capybara app
 Capybara.app = Chitter
 
 RSpec.configure do |config|
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+
   config.after(:suite) do
     motivation = [
       'Red Green Refactor!',
